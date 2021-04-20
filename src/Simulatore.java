@@ -48,7 +48,6 @@ public class Simulatore {
             System.out.println("INIZIO GIORNATA: "+ (giornata.getId()+1));
 
             //PER OGNI CLASSIFICA UPTODATE RICAVO LA CLASSIFICA SUCCESSIVA ED ELIMINO QUELLE VECCHIE
-            int stop=classificaArrayList.size();
             while (classificaArrayList.get(0).getGiornata()==k) {
                 Classifica classificaUpToDate=classificaArrayList.get(0);
 
@@ -85,7 +84,6 @@ public class Simulatore {
                     for(Squadra squadra: classificaUpToDate.getSquadra())
                         classifica.getSquadra().add(new Squadra(squadra));
                     classificaArrayList.add(classifica);
-                    System.out.println();
                 }
                 classificaArrayList.remove(0);
             }
