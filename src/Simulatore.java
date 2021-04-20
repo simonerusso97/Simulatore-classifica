@@ -1,8 +1,12 @@
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Simulatore {
 
     public static void main(String[] args) {
+        System.out.println("Quale squadra ti interessa");
+        Scanner sc=new Scanner(System.in);
+        String squadraInteresse = sc.nextLine();
         ArrayList<Squadra> squadraArrayList = new ArrayList<>();
         Calendario calendario;
         ArrayList<Classifica> classificaArrayList = new ArrayList<>();
@@ -41,6 +45,10 @@ public class Simulatore {
         //CALCOLO TUTTE LE COMBINAZIONI POSSIBILI DEGLI ESITI DELLE PARTITE
         Combinatorio.CombinationRepetition(squadraArrayList.size()/2);
 
+
+        double totRipetizioni = Math.pow(calendario.getGiornataArrayList().size(), combinazioneEsiti.size());
+        double tot = 0;
+        double status;
 
         //PER OGNI GIORNATA
         int k=0;
@@ -84,31 +92,81 @@ public class Simulatore {
                     for(Squadra squadra: classificaUpToDate.getSquadra())
                         classifica.getSquadra().add(new Squadra(squadra));
                     classificaArrayList.add(classifica);
+                    tot++;
+                    status = (tot/totRipetizioni)*100;
+                    status=Math.round(status);
+                    if(status<0.05)
+                        System.out.print("[#                   ] "+ (status) +"%\r");
+                    else if(status<0.1)
+                        System.out.print("[##                  ] "+ (status) +"%\r");
+                    else if(status<0.15)
+                        System.out.print("[###                 ] "+ (status) +"%\r");
+                    else if(status<0.2)
+                        System.out.print("[####                ] "+ (status) +"%\r");
+                    else if(status<0.25)
+                        System.out.print("[#####               ] "+ (status) +"%\r");
+                    else if(status<0.3)
+                        System.out.print("[######              ] "+ (status) +"%\r");
+                    else if(status<0.35)
+                        System.out.print("[#######             ] "+ (status) +"%\r");
+                    else if(status<0.4)
+                        System.out.print("[########            ] "+ (status) +"%\r");
+                    else if(status<0.45)
+                        System.out.print("[#########           ] "+ (status) +"%\r");
+                    else if(status<0.5)
+                        System.out.print("[##########          ] "+ (status) +"%\r");
+                    else if(status<0.55)
+                        System.out.print("[###########         ] "+ (status) +"%\r");
+                    else if(status<0.6)
+                        System.out.print("[############        ] "+ (status) +"%\r");
+                    else if(status<0.65)
+                        System.out.print("[#############       ] "+ (status) +"%\r");
+                    else if(status<0.7)
+                        System.out.print("[##############      ] "+ (status) +"%\r");
+                    else if(status<0.75)
+                        System.out.print("[###############     ] "+ (status) +"%\r");
+                    else if(status<0.8)
+                        System.out.print("[################    ] "+ (status) +"%\r");
+                    else if(status<0.85)
+                        System.out.print("[#################   ] "+ (status) +"%\r");
+                    else if(status<0.9)
+                        System.out.print("[##################  ] "+ (status) +"%\r");
+                    else if(status<0.95)
+                        System.out.print("[################### ] "+ (status) +"%\r");
+
+
                 }
                 classificaArrayList.remove(0);
             }
             k++;
         }
-        /*int cont=0;
+        int cont=0;
+        int pos;
+        int pt=0;
+        int pariMerito=0;
         for (Classifica c: classificaArrayList) {
-            if(c.getGiornata()==calendario.giornataArrayList.size()-1) {
-                cont++;
                 System.out.println("CALSSIFICA ");
                 c.getSquadra().sort(new SortByPunti());
+                pos=0;
                 for (Squadra squadra : c.getSquadra()) {
+                    if(pos < 3 && squadra.getNome().equals(squadraInteresse)){
+                        cont++;
+                    }
+                    if(pos==2 && !squadra.getNome().equals(squadraInteresse)){
+                        pt=squadra.getPunti();
+                    }
+                    if(pos>2 && squadra.getNome().equals(squadraInteresse) && squadra.getPunti()==pt){
+                        cont++;
+                        pariMerito++;
+                    }
+
                     System.out.println(squadra.getNome() + "   pt." + squadra.getPunti());
+                    pos++;
                 }
-                System.out.println();
-            }
+                System.out.println("----------");
         }
-        System.out.println("GLI SCENARI POSSIBILI SONO:" +cont);*/
+
+        System.out.println(squadraInteresse + " ha " + cont + "scenari ha favore su "
+                +classificaArrayList.size() +", di cui " + pariMerito +" a parimerito con il 3°");
     }
-
-
-
-
-
-
-
-
 }

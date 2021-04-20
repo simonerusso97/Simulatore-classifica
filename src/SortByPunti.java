@@ -6,6 +6,6 @@ class SortByPunti implements Comparator<Squadra>
     // roll number
     public int compare(Squadra a, Squadra b)
     {
-        return a.punti - b.punti;
+        return b.punti - a.punti;
     }
 }
