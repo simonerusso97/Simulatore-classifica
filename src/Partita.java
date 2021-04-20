@@ -15,6 +15,14 @@ public class Partita {
         return squadra2;
     }
 
+    public void setSquadra1(Squadra squadra1) {
+        this.squadra1 = squadra1;
+    }
+
+    public void setSquadra2(Squadra squadra2) {
+        this.squadra2 = squadra2;
+    }
+
     public String getEsito() {
         return esito;
     }

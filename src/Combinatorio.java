@@ -4,7 +4,7 @@ public class Combinatorio {
 
 
     private static ArrayList<Integer> chosenValue= new ArrayList<>();
-    private static ArrayList<ArrayList<Integer>> returnable= (ArrayList<ArrayList<Integer>>) SessionManager.getInstance().getSESSION().get("chosenArray");
+    private static ArrayList<ArrayList<Integer>> combinazioneEsiti= (ArrayList<ArrayList<Integer>>) SessionManager.getInstance().getSESSION().get("combinazioneEsiti");
 
     static void CombinationRepetitionUtil(int chosen[], int arr[],
                                           int index, int r, int start, int end) {
@@ -18,7 +18,7 @@ public class Combinatorio {
                     chosenValue.add(arr[chosen[i]]);
 
             }
-            returnable.add(chosenValue);
+            combinazioneEsiti.add(chosenValue);
 
             System.out.printf("\n");
             return;

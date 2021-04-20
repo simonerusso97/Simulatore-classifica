@@ -15,4 +15,12 @@ public class Giornata {
     public void setPartitaArrayList(ArrayList<Partita> partitaArrayList) {
         this.partitaArrayList = partitaArrayList;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 }

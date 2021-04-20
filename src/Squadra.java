@@ -11,6 +11,12 @@ public class Squadra {
         this.punti=punti;
     }
 
+    public Squadra(Squadra squadra) {
+        this.nome = squadra.getNome();
+        this.id=squadra.getId();
+        this.punti=squadra.getPunti();
+    }
+
     public String getNome() {
         return nome;
     }

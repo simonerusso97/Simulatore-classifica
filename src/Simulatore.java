@@ -1,20 +1,13 @@
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
 
 public class Simulatore {
 
     public static void main(String[] args) {
-
         ArrayList<Squadra> squadraArrayList = new ArrayList<>();
-        Giornata giornata;
         Calendario calendario;
         ArrayList<Classifica> classificaArrayList = new ArrayList<>();
-        Classifica classifica;
-        ArrayList<Integer> esito;
-        ArrayList<ArrayList<Integer>> chosenArray = new ArrayList<>();
-        SessionManager.getInstance().getSESSION().put("chosenArray", chosenArray);
-        int nEsitiPossibili;
+        ArrayList<ArrayList<Integer>> combinazioneEsiti = new ArrayList<>();
+        SessionManager.getInstance().getSESSION().put("combinazioneEsiti", combinazioneEsiti);
         Classifica classificaIniziale;
 
         //AGGIUNGO LE SQUADRE
@@ -33,6 +26,8 @@ public class Simulatore {
             classificaIniziale.getSquadra().add(temp);
         }
 
+
+
         classificaIniziale.setGiornata(0);
         classificaArrayList.add(classificaIniziale);
 
@@ -42,73 +37,63 @@ public class Simulatore {
 
         //STAMPO IL CALENDARIO
         Business.getInstance().stampaCalendario(calendario);
-        calendario.getGiornataArrayList().remove(0);
 
         //CALCOLO TUTTE LE COMBINAZIONI POSSIBILI DEGLI ESITI DELLE PARTITE
         Combinatorio.CombinationRepetition(squadraArrayList.size()/2);
-        nEsitiPossibili=chosenArray.size();
 
-        ArrayList<Classifica> classificaDiGiornataArrayList;
+
         //PER OGNI GIORNATA
-        for(int k=0; k<calendario.getGiornataArrayList().size(); k++){
-            giornata = calendario.getGiornataArrayList().get(k);
-            System.out.println("inizio giornata "+ (k+1));
+        int k=0;
+        for(Giornata giornata: calendario.getGiornataArrayList()){
+            System.out.println("INIZIO GIORNATA: "+ (giornata.getId()+1));
 
-            //CERCO LE CLASSIFICHE DI GIORNATA
-            classificaDiGiornataArrayList = new ArrayList<>();
-            for(Classifica c: classificaArrayList){
-                if(c.getGiornata()==k)
-                    classificaDiGiornataArrayList.add(c);
-            }
+            //PER OGNI CLASSIFICA UPTODATE RICAVO LA CLASSIFICA SUCCESSIVA ED ELIMINO QUELLE VECCHIE
+            int stop=classificaArrayList.size();
+            while (classificaArrayList.get(0).getGiornata()==k) {
+                Classifica classificaUpToDate=classificaArrayList.get(0);
 
-            //PER OGNI CLASSIFICA DI GIORNATA
-            for(Classifica c: classificaDiGiornataArrayList) {
-                //SETTO LA CLASSIFICA DI GIORNATA
-                for (Squadra squadra : c.getSquadra()) {
-                    for (Partita par : giornata.getPartitaArrayList()) {
-                        Squadra squadra1 = par.getSquadra1();
-                        Squadra squadra2 = par.getSquadra2();
-                        if (squadra.getNome().equalsIgnoreCase(squadra1.getNome()))
-                            par.getSquadra1().setPunti(squadra.getPunti());
-                        if (squadra.getNome().equalsIgnoreCase(squadra2.getNome()))
-                            par.getSquadra2().setPunti(squadra.getPunti());
-                    }
+                //SETTO LE SQUADRE IN BASE ALLA CLASSIFICA UPTODATE
+                squadraArrayList.clear();
+                for(Squadra squadra: classificaUpToDate.getSquadra()){
+                    squadraArrayList.add(new Squadra(squadra));
                 }
-
-
-                //PER OGNI ESITO
-                for(int i=0; i<nEsitiPossibili; i++){
-                esito=chosenArray.get(i);
-
-                    classifica = new Classifica();
-                    //ANALIZZO I RISULTATI DELLA GIORNATA
-                    for (int t=0; t<giornata.getPartitaArrayList().size(); t++) {
-                        Partita par=giornata.getPartitaArrayList().get(t);
-                        if (esito.get(t) == 1)
-                            par.getSquadra1().updatePunti(3);
-                        else if (esito.get(t) == 2)
-                            par.getSquadra2().updatePunti(3);
-                        else {
-                            par.getSquadra1().updatePunti(1);
-                            par.getSquadra2().updatePunti(1);
+                //SIMIULO LA GIORNATA CON OGNI POSSIBILE ESITO
+                for(ArrayList<Integer> esito: combinazioneEsiti){
+                    int i=0;
+                    for (Partita partita: giornata.getPartitaArrayList()){
+                        //COLLEGO LA LISTA DELLE SQUADRE NELLA CLASSIFICA UPTODATE ALLE SQUADRE DELLE PARTITE IN MODO DA AGGIORNARE I PUNTI
+                        for(Squadra squadra: classificaUpToDate.getSquadra()){
+                            if(partita.getSquadra1().getId()==squadra.getId())
+                                partita.setSquadra1(squadra);
+                            else if(partita.getSquadra2().getId()==squadra.getId())
+                                partita.setSquadra2(squadra);
                         }
-                        //COSTRUISCO LA CLASSIFICA DI GIORNATA
-
-                        classifica.getSquadra().add(new Squadra(par.getSquadra1().getNome(), par.getSquadra1().getId(), par.getSquadra1().getPunti()));
-                        classifica.getSquadra().add(new Squadra(par.getSquadra2().getNome(), par.getSquadra1().getId(), par.getSquadra2().getPunti()));
+                        //SIMULO LE PARTITE
+                        if(esito.get(i)==1)
+                            partita.getSquadra1().updatePunti(3);
+                        else if(esito.get(i)==2)
+                            partita.getSquadra2().updatePunti(3);
+                        else if (esito.get(i) == 0) {
+                            partita.getSquadra2().updatePunti(1);
+                            partita.getSquadra1().updatePunti(1);
+                        }
+                        i++;
                     }
+                    //SALVO LA NUOVA CLASSIFICA
+                    Classifica classifica = new Classifica();
                     classifica.setGiornata(k+1);
+                    for(Squadra squadra: classificaUpToDate.getSquadra())
+                        classifica.getSquadra().add(new Squadra(squadra));
                     classificaArrayList.add(classifica);
+                    System.out.println();
                 }
-
+                classificaArrayList.remove(0);
             }
-            for(int l=0; classificaArrayList.get(l).getGiornata()<k+1; l++)
-                classificaArrayList.remove(l);
-            System.out.println();
+            k++;
         }
-        int cont=0;
+        /*int cont=0;
         for (Classifica c: classificaArrayList) {
-            if(c.getGiornata()==calendario.giornataArrayList.size()) {
+            if(c.getGiornata()==calendario.giornataArrayList.size()-1) {
                 cont++;
                 System.out.println("CALSSIFICA ");
                 c.getSquadra().sort(new SortByPunti());
@@ -118,7 +103,7 @@ public class Simulatore {
                 System.out.println();
             }
         }
-        System.out.println("GLI SCENARI POSSIBILI SONO:" +cont);
+        System.out.println("GLI SCENARI POSSIBILI SONO:" +cont);*/
     }
 
 
