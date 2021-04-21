@@ -4,43 +4,54 @@ import java.util.Scanner;
 public class Simulatore {
 
     public static void main(String[] args) {
-        System.out.println("Quale squadra ti interessa");
-        Scanner sc=new Scanner(System.in);
-        String squadraInteresse = sc.nextLine();
-        ArrayList<Squadra> squadraArrayList = new ArrayList<>();
-        Calendario calendario;
+        Calendario calendario = new Calendario();
         ArrayList<Classifica> classificaArrayList = new ArrayList<>();
         ArrayList<ArrayList<Integer>> combinazioneEsiti = new ArrayList<>();
         SessionManager.getInstance().getSESSION().put("combinazioneEsiti", combinazioneEsiti);
         Classifica classificaIniziale;
-        int cont=0;
-        int pt=0;
-        int pariMerito=0;
+        double nPossibiliClassificheFinali = 0;
+        ArrayList<Posizione> posizioneArrayList = new ArrayList<>();
 
-        //AGGIUNGO LE SQUADRE
-        squadraArrayList.add(new Squadra("Paris Saint-Chiangimuertu", 0, 57));
-        squadraArrayList.add(new Squadra("Lokovid Mosca", 1, 46));
-        squadraArrayList.add(new Squadra("IlGrandeTonino", 2, 42));
-        squadraArrayList.add(new Squadra("AD10S", 3, 49));
-        squadraArrayList.add(new Squadra("CoronaVirus Entella", 4, 37));
-        squadraArrayList.add(new Squadra("HERTA MPONE", 5, 36));
-        squadraArrayList.add(new Squadra("Benfiga", 6, 41));
-        squadraArrayList.add(new Squadra("Antonio Russo", 7, 31));
 
-        classificaIniziale = new Classifica();
-        for(Squadra squadra: squadraArrayList){
-            Squadra temp = new Squadra(squadra.getNome(), squadra.getId(), squadra.getPunti());
-            classificaIniziale.getSquadra().add(temp);
+        System.out.println("USARE MASSIMO A 5 GIORNATE DAL TERMINE!!!");
+        System.out.println("Quante squadre ci sono nella tua lega?");
+        Scanner sc=new Scanner(System.in);
+        sc.useDelimiter(System.lineSeparator());
+        int nSquadre = sc.nextInt();
+        ArrayList<Squadra> squadraArrayList = new ArrayList<>();
+        for(int l=0; l<nSquadre; l++){
+            System.out.println("Nome squadra");
+            String nomeSquadra = sc.next();
+            System.out.println("Quanti punti ha in quessto momento?");
+            int punti = sc.nextInt();
+
+            squadraArrayList.add(new Squadra(l, nomeSquadra, punti));
+            posizioneArrayList.add(new Posizione(nSquadre, nomeSquadra));
         }
 
+        System.out.println("Quante giornate ci sono ancora da giocare?");
+        int gi=sc.nextInt();
+        if(gi % nSquadre-1 > 1 ) {
+            System.out.println("Inserisci manualmente il calendario");
+            //TODO:DA COMPLETARE
+        }
+        else if(gi % nSquadre-1 > 0) {
+            System.out.println("Inserisci le partite della giornata appena conclusa");
+            //TODO:DA COMPLETARE
+        }
 
-
+        //COSTRUISCO LA CLASSIFICA INIZIALE
+        classificaIniziale = new Classifica();
+        for(Squadra squadra: squadraArrayList){
+            classificaIniziale.getSquadra().add(new Squadra(squadra.getId(), squadra.getNome(), squadra.getPunti()));
+        }
+        classificaIniziale.getSquadra().sort(new SortByPunti());
         classificaIniziale.setGiornata(0);
         classificaArrayList.add(classificaIniziale);
 
-
         //CREO IL CALENDARIO
-        calendario = Business.getInstance().ListMatches(squadraArrayList);
+        if(calendario.getGiornataArrayList().size()==0)
+            calendario = Business.getInstance().ListMatches(squadraArrayList);
 
         //STAMPO IL CALENDARIO
         Business.getInstance().stampaCalendario(calendario);
@@ -49,9 +60,9 @@ public class Simulatore {
         Combinatorio.CombinationRepetition(squadraArrayList.size()/2);
 
 
-        double totRipetizioni = 0;
+
         for(int j=1; j<calendario.getGiornataArrayList().size()+1; j++){
-            totRipetizioni += Math.pow(combinazioneEsiti.size(), j);
+            nPossibiliClassificheFinali += Math.pow(combinazioneEsiti.size(), j);
         }
         double tot = 0;
         double status;
@@ -62,7 +73,8 @@ public class Simulatore {
             System.out.println("INIZIO GIORNATA: "+ (giornata.getId()+1));
 
             //PER OGNI CLASSIFICA UPTODATE RICAVO LA CLASSIFICA SUCCESSIVA ED ELIMINO QUELLE VECCHIE
-            while (classificaArrayList.get(0).getGiornata()==k) {
+
+            while (classificaArrayList.size()> 0 && classificaArrayList.get(0).getGiornata()==k) {
                 Classifica classificaUpToDate=classificaArrayList.get(0);
 
                 //SETTO LE SQUADRE IN BASE ALLA CLASSIFICA UPTODATE
@@ -107,30 +119,34 @@ public class Simulatore {
                     else{
 
                         int pos;
-                        System.out.println("CALSSIFICA ");
-                        pos=0;
-                        for (Squadra squadra : classifica.getSquadra()) {
-                            if(pos < 3 && squadra.getNome().equalsIgnoreCase(squadraInteresse)){
-                                cont++;
+                        System.out.println("CALCOLO LE POSSIBILITA'");
+                        //TODO IMPLEMENTARE I PARI MERITO
+                        for (Posizione posizione: posizioneArrayList) {
+                            pos=0;
+                            for(Squadra squadra : classifica.getSquadra()){
+                                if(posizione.getNome().equalsIgnoreCase(squadra.getNome())){
+                                    posizione.updatePosizioni(pos);
+                                    if(pos>0 && pos<nSquadre-1){
+                                        if(classifica.getSquadra().get(pos-1).getPunti()==squadra.getPunti() || classifica.getSquadra().get(pos+1).getPunti()==squadra.getPunti())
+                                            posizione.updatePariMerito(pos);
+                                    }
+                                    else if(pos==0){
+                                        if(classifica.getSquadra().get(pos+1).getPunti()==squadra.getPunti())
+                                            posizione.updatePariMerito(pos);
+                                    }
+                                    else if(pos==nSquadre-1){
+                                        if(classifica.getSquadra().get(pos-1).getPunti()==squadra.getPunti())
+                                            posizione.updatePariMerito(pos);
+                                    }
+                                }
+                                pos++;
                             }
-                            if(pos==2 && !squadra.getNome().equalsIgnoreCase(squadraInteresse)){
-                                pt=squadra.getPunti();
-                            }
-                            if(pos>2 && squadra.getNome().equalsIgnoreCase(squadraInteresse) && squadra.getPunti()==pt){
-                                cont++;
-                                pariMerito++;
-                            }
-
-                            System.out.println(squadra.getNome() + "   pt." + squadra.getPunti());
-                            pos++;
                         }
-                        System.out.println("----------");
                     }
                 }
-
                 classificaArrayList.remove(0);
 
-                status = (tot/totRipetizioni)*100;
+                status = (tot/nPossibiliClassificheFinali)*100;
                 status=Math.round(status);
                 if(status<0.05)
                     System.out.print("[#                   ] "+ (status) +"%\r");
@@ -173,8 +189,11 @@ public class Simulatore {
             }
             k++;
         }
-
-        System.out.println(squadraInteresse + " ha " + cont + "scenari ha favore su "
-                +classificaArrayList.size() +", di cui " + pariMerito +" a parimerito con il 3°");
+        for (Posizione posizione: posizioneArrayList) {
+            System.out.println("La squadra "+ posizione.getNome() + " ottiene questi piazzamenti ");
+            for(int l=0; l<nSquadre; l++) {
+                System.out.println((l + 1) + "°:" + posizione.getPosizioni().get(l) + " (" + posizione.getPariMerito().get(l) + " pari merito)");
+            }
+        }
     }
 }

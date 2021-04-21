@@ -1,11 +1,10 @@
-import java.util.ArrayList;
-
 public class Squadra {
     String nome;
     int id;
     int punti;
 
-    public Squadra(String nome, int id, int punti) {
+
+    public Squadra(int id, String nome, int punti) {
         this.nome = nome;
         this.id=id;
         this.punti=punti;
