@@ -11,7 +11,9 @@ public class Simulatore {
         Classifica classificaIniziale;
         double nPossibiliClassificheFinali = 0;
         ArrayList<Posizione> posizioneArrayList = new ArrayList<>();
-
+        int k=0;
+        boolean check=true;
+        int index=1;
 
         System.out.println("USARE MASSIMO A 5 GIORNATE DAL TERMINE!!!");
         System.out.println("Quante squadre ci sono nella tua lega?");
@@ -31,14 +33,51 @@ public class Simulatore {
 
         System.out.println("Quante giornate ci sono ancora da giocare?");
         int gi=sc.nextInt();
-        if(gi % nSquadre-1 > 1 ) {
+        if(gi % nSquadre-1 > 1  && gi!=nSquadre-2) {
             System.out.println("Inserisci manualmente il calendario");
             //TODO:DA COMPLETARE
         }
-        else if(gi % nSquadre-1 > 0) {
-            System.out.println("Inserisci le partite della giornata appena conclusa");
-            //TODO:DA COMPLETARE
+        else if(gi == nSquadre-2) {
+            System.out.println("Inserisci le partite della giornata appena conclusa (Sq1-sq2 + invio; NO SPAZIO CON IL TRATTINO)");
+            ArrayList<Squadra> tempArrayList = new ArrayList<>();
+            ArrayList<String> tempNomeSquadre = new ArrayList<>();
+            for(int l=0; l<squadraArrayList.size()/2;l++){
+                String partita;
+                partita = sc.next();
+                tempNomeSquadre.add(partita.split("-")[0]);
+                tempNomeSquadre.add(partita.split("-")[1]);
+            }
+            int t=0;
+            for (Squadra s : squadraArrayList){
+                tempArrayList.add(s);
+            }
+            for (String n : tempNomeSquadre){
+                for(Squadra s : squadraArrayList){
+                    if(n.equalsIgnoreCase(s.getNome())){
+                        if(t<2){
+                            tempArrayList.set(t, s);
+                            t++;
+                        }
+                        else if(check){
+                            check=false;
+                            tempArrayList.set(t, s);
+                            t++;
+                        }
+                        else{
+                            check=true;
+                            tempArrayList.set(tempArrayList.size()-index,s);
+                            index++;
+                        }
+                    }
+                }
+            }
+            squadraArrayList.clear();
+            for (Squadra s:tempArrayList) {
+                squadraArrayList.add(s);
+            }
+            check=true;
         }
+        else check=false;
 
         //COSTRUISCO LA CLASSIFICA INIZIALE
         classificaIniziale = new Classifica();
@@ -52,6 +91,8 @@ public class Simulatore {
         //CREO IL CALENDARIO
         if(calendario.getGiornataArrayList().size()==0)
             calendario = Business.getInstance().ListMatches(squadraArrayList);
+        if(check)
+            calendario.getGiornataArrayList().remove(0);
 
         //STAMPO IL CALENDARIO
         Business.getInstance().stampaCalendario(calendario);
@@ -68,7 +109,6 @@ public class Simulatore {
         double status;
 
         //PER OGNI GIORNATA
-        int k=0;
         for(Giornata giornata: calendario.getGiornataArrayList()){
             System.out.println("INIZIO GIORNATA: "+ (giornata.getId()+1));
 
